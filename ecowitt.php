@@ -2,6 +2,32 @@
 
 include_once ('classes/db.php');
 
+function mapKey($keybase) {
+	switch($keybase) {
+		case 'temperature': $keybase = 'temp'; break;
+		case 'humidity': $keybase = 'humid'; break;
+		case 'soilmoisture': $keybase = 'soilmoist'; break;
+		case 'absolutepressure': $keybase = 'abspress'; break;
+		case 'relativepressure': $keybase = 'relpress'; break;
+	}
+	return $keybase;
+}
+
+function updateRange(&$map, $value, $keybase, $maxonly = false) {
+	$key = mapKey($keybase);
+	$max = $map['max'.$key];
+	if(is_null($max) || $value > $max) {
+		$map['max'.$key] = $value;
+	} 
+	if (!$maxonly) {
+		$min = $map['min'.$key];
+		if(is_null($min) || $value < $min) {
+			$map['min'.$key] = $value;
+		} 
+	}
+}
+
+
 	$data = array();
 
 	$timezone = new DateTimeZone('Australia/Canberra');
@@ -46,89 +72,121 @@ include_once ('classes/db.php');
 
 				$daily = array();
 				$daily['date'] = '\''.$todaydate.'\'';
-				$firstTime = true;
 
 				$lastdateutc = $nineamyesterday;
-				$totalseconds = 0;
+
+				// file_put_contents('include.log', "Included readings:\r\n");
+
+				foreach ($rows as &$row) {
+					$row['dateutcobj'] = DateTime::createFromFormat('Y-m-d H:i:s', $row['dateutc'], new DateTimeZone('UTC'));
+					$row['interval'] = $row['dateutcobj']->getTimestamp() - $lastdateutc->getTimestamp();
+					$lastdateutc = $row['dateutcobj'];
+					// file_put_contents('include.log', "  ".$row['dateutc']." => ".$row['dateutcobj']->format('Y-m-d H:i:s')."\r\n", FILE_APPEND);
+				}
+
+				$tocount = [ 
+					'temperature' => 'range+mean', 
+					'humidity' => 'range+mean', 
+					'relativepressure' => 'range+mean', 
+					'absolutepressure' => 'range+mean', 
+					'soilmoisture' => 'range+mean', 
+					'winddir' => 'winddirection', 
+					'windspeed' => 'mean',
+					'windgust' => 'max', 
+					'rainrate' => 'count', 
+					'raindaily' => 'raindaily', 
+					'solarradiation' => 'max+sunhours', 
+					'uv' => 'max'
+				];
+
+				$daily['raindaily'] = 0;
+				$prevraindaily = 0;
 				$sunseconds = 0;
-				$rainbeforestart;
-				$rainbeforemidnight = 0;
-				$totalrainfall = 0;
-				$totaltemp = 0;
-				$totalhumid = 0;
-				$totalsoilmoist = 0;
-				$totalrelpres = 0;
-				$totalabspress = 0;
-				$totalwindspeed = 0;
 				$windx = 0;
 				$windy = 0;
+				$counts = null;
 
-				foreach ($rows as $row) {
-					$dateutc = DateTime::createFromFormat('Y-m-d H:i:s', $row['dateutc'], new DateTimeZone('UTC'));
-					$interval = $dateutc->getTimestamp() - $lastdateutc->getTimestamp(); 
-					$totalseconds += $interval;
+				foreach ($tocount as $counting => $operation) {
+					$numreadings = 0;
+					$totalvalue = 0;
+					$totalseconds = 0;
+					$interval = 0;
+					foreach ($rows as $row) {
+						$interval += $row['interval'];
+						$rowvalue = $row[$counting];
+						if (!is_null($rowvalue)) {
+							$numreadings++;
+							switch ($operation) {
 
-					if ($firstTime) {
-						$rainbeforestart = $row['raindaily'];
-						$daily['mintemp'] = $daily['maxtemp'] = $row['temperature'];
-						$daily['minhumid'] = $daily['maxhumid'] = $row['humidity'];
-						$daily['minsoilmoist'] = $daily['maxsoilmoist'] = $row['soilmoisture'];
-						$daily['minrelpress'] = $daily['maxrelpress'] = $row['relativepressure'];
-						$daily['minabspress'] = $daily['maxabspress'] = $row['absolutepressure'];
-						$daily['maxsolrad'] = $row['solarradiation'];
-						$daily['maxuv'] = $row['uv'];
-						$daily['maxwindgust'] = $row['windgust'];
-						$firstTime = false;
-					} else {
-						if ($row['temperature'] < $daily['mintemp']) $daily['mintemp'] = $row['temperature'];
-						if ($row['humidity'] < $daily['minhumid']) $daily['minhumid'] = $row['humidity'];
-						if ($row['soilmoisture'] < $daily['minsoilmoist']) $daily['minsoilmoist'] = $row['soilmoisture'];
-						if ($row['relativepressure'] < $daily['minrelpress']) $daily['minrelpress'] = $row['relativepressure'];
-						if ($row['absolutepressure'] < $daily['minabspress']) $daily['minabspress'] = $row['absolutepressure'];
-						if ($row['temperature'] > $daily['maxtemp']) $daily['maxtemp'] = $row['temperature'];
-						if ($row['humidity'] > $daily['maxhumid']) $daily['maxhumid'] = $row['humidity'];
-						if ($row['soilmoisture'] > $daily['maxsoilmoist']) $daily['maxsoilmoist'] = $row['soilmoisture'];
-						if ($row['relativepressure'] > $daily['maxrelpress']) $daily['maxrelpress'] = $row['relativepressure'];
-						if ($row['absolutepressure'] > $daily['maxabspress']) $daily['maxabspress'] = $row['absolutepressure'];
-						if ($row['solarradiation'] > $daily['maxsolrad']) $daily['maxsolrad'] = $row['solarradiation'];
-						if ($row['uv'] > $daily['maxuv']) $daily['maxuv'] = $row['uv'];
-						if ($row['windgust'] > $daily['maxwindgust']) $daily['maxwindgust'] = $row['windgust'];
-					}
-					$totaltemp += $row['temperature'] * $interval;
-					$totalhumid += $row['humidity'] * $interval;
-					$totalsoilmoist += $row['soilmoisture'] * $interval;
-					$totalrelpress += $row['relativepressure'] * $interval;
-					$totalabspress += $row['absolutepressure'] * $interval;
-					$totalwindspeed += $row['windspeed'] * $interval;
-					// See https://www.sciencedirect.com/science/article/abs/pii/0038092X9390075Y ...
-					if ($row['solarradiation'] > 120) {
-						$sunseconds += $interval;
-					}
-					if ($totalrainfall > 0 && $row['raindaily'] < $totalrainfall) {
-						$rainbeforemidnight = $totalrainfall;
-						$totalrainfall = $row['raindaily'];
-					} else if ($row['raindaily'] > $totalrainfall) {
-						$totalrainfall = $row['raindaily'];
-					}
-					$xvector = sin(deg2rad($row['winddir']));
-					$yvector = cos(deg2rad($row['winddir']));
-					$windx += $xvector * $row['windspeed'] * $interval;
-					$windy += $yvector * $row['windspeed'] * $interval;
+								case 'range+mean':
+									$totalvalue += $rowvalue * $interval;
+									updateRange($daily, $rowvalue, $counting);
+									break;
 
-					$lastdateutc = $dateutc;
+								case 'mean':
+									$totalvalue += $rowvalue * $interval;
+									break;
+								
+								case 'max':
+									updateRange($daily, $rowvalue, $counting, true);
+									break;
+
+								case 'raindaily':
+									if ($value < $prevraindaily) {
+										$daily['raindaily'] = $prevraindaily;
+									}
+									$prevraindaily = $value;
+									break;
+	
+								case 'max+sunhours':
+									updateRange($daily, $rowvalue, $counting, true);
+									if ($rowvalue >= 120) {
+										$sunseconds += interval;
+									}
+									break;
+	
+								case 'winddirection':
+									$xvector = sin(deg2rad($row['winddir']));
+									$yvector = cos(deg2rad($row['winddir']));
+									$windx += $xvector * $row['windspeed'] * $interval;
+									$windy += $yvector * $row['windspeed'] * $interval;
+									break;
+							}
+							$totalseconds += $interval;
+							$interval = 0;
+						}
+					}
+					switch ($operation) {
+						case 'range+mean':
+						case 'mean':
+							$daily['mean'.mapKey($counting)] = $totalvalue / $totalseconds;
+							break;
+							 
+						case 'raindaily':
+							$daily['raindaily'] += $prevraindaily;
+							break;
+
+						case 'max+sunhours':
+							$daily['sunhours'] = $sunseconds / 3600;
+							break;
+
+						case 'winddirection':
+							$daily['meanwinddir'] = rad2deg(atan2($windy, $windx));
+							if ($daily['meanwinddir'] < 0) {
+								$daily['meanwinddir'] += 360;
+							}
+							break;
+					}
+					$counts .= (is_null($counts) ? '' : ", ").ucfirst($counting).': '.$numreadings;
 				}
-				$daily['meantemp'] = $totaltemp / $totalseconds;
-				$daily['meanhumid'] = $totalhumid / $totalseconds;
-				$daily['meansoilmoist'] = $totalsoilmoist / $totalseconds;
-				$daily['meanrelpress'] = $totalrelpress / $totalseconds;
-				$daily['meanabspress'] = $totalabspress / $totalseconds;
-				$daily['meanwindspeed'] = $totalwindspeed / $totalseconds;
-				$daily['sunhours'] = $sunseconds / 3600;
-				$daily['rainfall'] = $totalrainfall - $rainbeforestart + $rainbeforemidnight;
-				$daily['meanwinddir'] = rad2deg(atan2($windy, $windx));
-				if ($daily['meanwinddir'] < 0) {
-					$daily['meanwinddir'] += 360;
+				$daily['counts'] = $counts;
+
+				/*
+				file_put_contents('post.log', "Daily values:\r\n");
+				foreach ($daily as $k => $v) {
+					file_put_contents('post.log', "  $k => $v\r\n", FILE_APPEND);
 				}
+				*/
 
 				$db->insert('weather_daily', $daily);
 			}
