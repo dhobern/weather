@@ -1,0 +1,267 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 10 Sep 2020, 2:12:26 pm
+    Author     : stang
+*/
+@import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap');
+
+html, body {
+    background-color: #f2f3ed;
+    height: 100%;
+}
+.landing {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.sites {
+    display: flex;
+    align-items: center;
+    flex-flow: row wrap;
+    justify-content: center;
+}
+.item {
+    display: inline;
+    margin: 0px 50px;
+    width: 200px;
+    padding: 10px;
+    align-items: center;
+    flex-direction: column;
+    display: flex;
+}
+img {
+    display: inline-block;
+}
+a {
+    text-decoration: none;
+    text-align: center;
+}
+a:hover, h3:hover    {
+    color: #7e560e;
+}
+#navbar h3 {
+    text-align: center;
+    display: inline-block;
+    font-family: 'Fredericka the Great', sans-serif;
+    font-weight: 400;
+    line-height: 1.2em;
+    margin-top: 0;
+    color: #3b2b0c;
+}
+@media (max-width: 655px) {
+    .landing {
+        min-height: 100%;
+        justify-content: flex-start;
+    }
+}
+@media (max-height: 540px) {
+    .landing {
+        justify-content: flex-start;
+    }
+}
+#navbar {
+    background: #f2f3ed;
+    color: #3b2b0c;
+    overflow: auto;    
+}
+
+#navbar a{
+    color: #3b2b0c;
+}
+
+#navbar h1 {
+    float: left;
+    padding-top: 20px;
+}
+
+#navbar ul {
+    list-style: none;
+    float: right;
+}
+
+#navbar ul li {
+    font-family: 'Fredericka the Great', sans-serif;
+    font-size: 1.4rem;
+    float: left;
+}
+
+#navbar ul li a {
+    display: block;
+    padding: 20px;
+    text-align: center;
+}
+
+#navbar ul li a:hover,
+#navbar ul li a.current {
+    color: #7e560e;
+}
+
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 10 Sep 2020, 2:12:26 pm
+    Author     : stang
+*/
+@import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    line-height: 1.3em;
+}
+html {
+    width: 100%;
+}
+body {
+    width: 100%;
+    min-width: 100%;
+    background-color: #f2f3ed;
+    font-family: 'Marmelad', sans-serif;
+    color: #3b2b0c;
+    padding: 10px 20px 20px 20px;
+}
+div {
+    width: 100%;
+}
+
+
+a:link, a:visited {
+    color: #3b2b0c;
+}
+a:hover {
+    color: #7e560e;
+}
+a {
+    text-decoration: none;
+}
+
+header {
+    height: 140px;
+    border-bottom: 1px solid #3b2b0c;
+    background-clip: border-box;
+}
+
+#navbar {
+    width: 100%;
+    margin-bottom: 20px;
+    height: 120px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    overflow: auto;
+}
+
+.site-name {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.site-name a {
+    font-size: 2.0rem;
+    font-weight: normal;
+    font-family: 'Fredericka the Great', serif;
+}
+
+.site-name img {
+    height: 120px;
+    padding: 0px 5px 5px 0px;
+}
+
+.site-menu {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.site-menu-item {
+    height: 40px;
+    font-family: 'Fredericka the Great', serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+}
+
+.site-menu-item img {
+    height: 40px;
+    padding-left: 20px;
+}
+@media (max-width: 500px) {
+    .site-menu-item img {
+        display: none;
+    }
+    .site-name img {
+        display: none;
+    }
+    .site-menu-item {
+        text-align: right;
+    }
+}
+
+.site-menu-item a, .site-name a {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end; 
+}
+
+@media (max-width: 1000px) {
+    html {
+        font-size: 10px;
+    }
+
+    .site-name img {
+        height: 80px;
+    }
+}
+.daily-summary, .readings {
+    padding: 20px 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.overview {
+    padding-top: 20px;
+}
+.overview h3 {
+    margin-top: 20px;
+}
+.daily-summary {
+    border-bottom: 1px solid #3b2b0c;
+}
+.daily-summary p, .readings p, .overview p {
+    padding-top: 5px;
+}
+.footer {
+    margin-top: 40px;
+    padding: 20px 0px;
+    border-top: 1px solid #3b2b0c;
+    text-align:center;
+    font-size: 80%;
+}
+.cc-logo img {
+    padding-right: 10px;
+    vertical-align: middle;
+    display: inline;
+}
+.readings td {
+    padding: 0px 10px;
+}
+.overview ul {
+    margin: 10px 30px;
+}
