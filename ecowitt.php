@@ -100,25 +100,25 @@ function addSunRiseAndSet(&$map, $date, $timezone) {
 $timezone = new DateTimeZone('Australia/Canberra');
 
 // UTC DateTime from Ecowitt reading
-$datetime = DateTime::createFromFormat('Y-m-d H:i:s', $_POST['dateutc']);
+$datetime = DateTime::createFromFormat('Y-m-d H:i:s', filter_input(INPUT_POST, 'dateutc', FILTER_SANITIZE_STRING));
 
 // Create array with all readings mapped into preferred units
 // Temperature: F -> C, Pressure: inHg -> hPa, Speed: mph -> kph
 // Rain: inch -> mm
 $data = array();
 $data['dateutc'] = '\''.$datetime->format('Y-m-d H:i:s').'\'';
-$data['temperature'] = (($_POST['tempf'] - 32) * 5) / 9;
-$data['humidity'] = $_POST['humidity'];
-$data['relativepressure'] = $_POST['baromrelin'] / 0.02953;
-$data['absolutepressure'] = $_POST['baromabsin'] / 0.02953;
-$data['winddir'] = $_POST['winddir'];
-$data['windspeed'] = $_POST['windspeedmph'] * 1.60934;
-$data['windgust'] = $_POST['windgustmph'] * 1.60934;
-$data['rainrate'] = $_POST['rainratein'] * 25.4;
-$data['raindaily'] = $_POST['dailyrainin'] * 25.4;
-$data['solarradiation'] = $_POST['solarradiation'];
-$data['uv'] = $_POST['uv'];
-$data['soilmoisture'] = $_POST['soilmoisture1'];
+$data['temperature'] = ((filter_input(INPUT_POST, 'tempf', FILTER_SANITIZE_STRING) - 32) * 5) / 9;
+$data['humidity'] = filter_input(INPUT_POST, 'humidity', FILTER_SANITIZE_STRING);
+$data['relativepressure'] = filter_input(INPUT_POST, 'baromrelin', FILTER_SANITIZE_STRING) / 0.02953;
+$data['absolutepressure'] = filter_input(INPUT_POST, 'baromabsin', FILTER_SANITIZE_STRING) / 0.02953;
+$data['winddir'] = filter_input(INPUT_POST, 'winddir', FILTER_SANITIZE_STRING);
+$data['windspeed'] = filter_input(INPUT_POST, 'windspeedmph', FILTER_SANITIZE_STRING) * 1.60934;
+$data['windgust'] = filter_input(INPUT_POST, 'windgustmph', FILTER_SANITIZE_STRING) * 1.60934;
+$data['rainrate'] = filter_input(INPUT_POST, 'rainratein', FILTER_SANITIZE_STRING) * 25.4;
+$data['raindaily'] = filter_input(INPUT_POST, 'dailyrainin', FILTER_SANITIZE_STRING) * 25.4;
+$data['solarradiation'] = filter_input(INPUT_POST, 'solarradiation', FILTER_SANITIZE_STRING);
+$data['uv'] = filter_input(INPUT_POST, 'uv', FILTER_SANITIZE_STRING);
+$data['soilmoisture'] = filter_input(INPUT_POST, 'soilmoisture1', FILTER_SANITIZE_STRING);
 
 // Insert record into weather_readings
 $db = new Db();
@@ -263,10 +263,10 @@ if ($timediff >= 0 && $timediff < 3600) {
 							// drops between records, we have passed midnight, so 
 							// save the before-midnight total.
 							case 'raindaily':
-								if ($value < $prevraindaily) {
+								if ($rowvalue < $prevraindaily) {
 									$daily['rainfall'] = $prevraindaily;
 								}
-								$prevraindaily = $value;
+								$prevraindaily = $rowvalue;
 								break;
 
 							// Track intervals in seconds where the solar radiation
