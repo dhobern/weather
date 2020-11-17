@@ -228,6 +228,7 @@ include_once ('classes/db.php');
             <div class="cc-logo"><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a>&nbsp;All content offered under <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>, Donald Hobern, <?php echo date("Y"); ?>.</div>
         </div>
 
+        <script src="https://hammerjs.github.io/dist/hammer.js"></script>
         <script> 
         document.body.addEventListener('keydown', function(event) { 
             const key = event.key; 
@@ -240,6 +241,20 @@ include_once ('classes/db.php');
                     break; 
             } 
         }); 
+        
+        var mc = new Hammer(document.body);
+
+        // listen to events...
+        mc.on("swipeleft swiperight", function(ev) {
+            switch (ev.type) {
+                case "swiperight": 
+                    window.location.href = "https://weather.hobern.net/index.php?date=<?php echo $prevdate; ?>"; 
+                    break; 
+                case "swipeleft": 
+                    window.location.href = "https://weather.hobern.net/index.php?date=<?php echo $nextdate; ?>"; 
+                    break; 
+            }
+        });
     </script> 
     </body>
 </html>
